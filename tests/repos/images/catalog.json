@@ -1,0 +1,42 @@
+{
+  "EAEA0-002A-2E89-2AAB-0": {
+    "bitstreams": [
+      {
+        "bitstreamid": "AMus_E055077_003_05.jpg",
+        "checksum": "f2432201025f39256fc353822ee3fb95",
+        "created": 1553089423984,
+        "checksum-algorithm": "MD5",
+        "last-modified": 1553089423995,
+        "filesize": 121341,
+        "content-type": "image/jpeg"
+      },
+      {
+        "bitstreamid": "thumbnail.jpg",
+        "checksum": "43b4c1c4f0a184bde2cc3a39372b1def",
+        "created": 1553089424351,
+        "checksum-algorithm": "MD5",
+        "last-modified": 1553089424520,
+        "filesize": 13388,
+        "content-type": "image/jpeg"
+      },
+      {
+        "bitstreamid": "web.jpg",
+        "checksum": "ed52b6f65343412c5257a199d35950db",
+        "created": 1553089425755,
+        "checksum-algorithm": "MD5",
+        "last-modified": 1553089425765,
+        "filesize": 66181,
+        "content-type": "image/jpeg"
+      }
+    ],
+    "metadata": {
+      "collection": "amsd",
+      "creator": "pycdstar 0.4.2",
+      "height": 520,
+      "name": "AMus-E055077-003_05",
+      "path": "AMus-E055077-003_05.jpg",
+      "type": "imagefile",
+      "width": 347
+    }
+  }
+}
