@@ -9,7 +9,7 @@ import re
 import pathlib
 import collections
 
-from csvw.dsv import UnicodeReader, UnicodeWriter
+from csvw.dsv import reader, UnicodeWriter
 
 from pyamsd.util import *  # noqa: F403
 
@@ -47,77 +47,76 @@ def run(args):
 
     datafile = args.repos / 'org_data' / 'records.tsv'
 
-    with UnicodeReader(datafile, delimiter='\t') as reader:
-        for i, row in enumerate(reader):
-            data = []
-            if i == 0:  # header
-                data.append('pk')  # add pk
-                for j, col in enumerate(row):
-                    data.append(fields[j][2].strip())
-            else:
-                data.append(i)  # add id
-                for j, col_ in enumerate(row):
-                    if j > 43 and len(col_):
-                        print('Error: too many filled columns for line {0}'.format(i + 1))
-                        continue
-                    if re.sub(r'[ ]+', '', col_) == '':
-                        data.append('')
-                    else:
-                        col = col_.strip()
-                        if fields[j][2] in fields_not_in_sticks \
-                                and fields[j][2] not in ['linked_filenames', 'source_citation']:
-                            col = col.lower()
-                        if fields[j][0] == 0:
-                            if fields[j][2] in ['lat', 'long']:
-                                try:
-                                    data.append(dms2dec(col))
-                                except ValueError:
-                                    print('Error: check lat/long notation in line {0} for "{1}"'.format(
-                                        i + 1, col))
-                                    data.append(None)
+    for i, row in enumerate(reader(datafile, delimiter='\t')):
+        data = []
+        if i == 0:  # header
+            data.append('pk')  # add pk
+            for j, col in enumerate(row):
+                data.append(fields[j][2].strip())
+        else:
+            data.append(i)  # add id
+            for j, col_ in enumerate(row):
+                if j > 43 and len(col_):
+                    print('Error: too many filled columns for line {0}'.format(i + 1))
+                    continue
+                if re.sub(r'[ ]+', '', col_) == '':
+                    data.append('')
+                else:
+                    col = col_.strip()
+                    if fields[j][2] in fields_not_in_sticks \
+                            and fields[j][2] not in ['linked_filenames', 'source_citation']:
+                        col = col.lower()
+                    if fields[j][0] == 0:
+                        if fields[j][2] in ['lat', 'long']:
+                            try:
+                                data.append(dms2dec(col))
+                            except ValueError:
+                                print('Error: check lat/long notation in line {0} for "{1}"'.format(
+                                    i + 1, col))
+                                data.append(None)
+                        else:
+                            data.append(col)
+                    elif fields[j][0] == 1 and len(fields[j][3]) == 0:
+                        if col not in csv_dataframe[fields[j][2]]:
+                            csv_dataframe[fields[j][2]][col] = len(csv_dataframe[fields[j][2]]) + 1
+                        data.append(csv_dataframe[fields[j][2]][col])
+                    elif fields[j][0] == 1 and len(fields[j][3]) > 1:
+                        ref_data = []
+                        if re.match(r'^ling_area_\d+$', fields[j][2]):
+                            try:
+                                data_array = ["|".join([i.strip() for i in list(
+                                    re.findall(fields[j][3], col)[0])])]
+                            except IndexError:
+                                print('Error: {0} in line {1} has wrong structure: {2}'.format(
+                                    fields[j][2], i + 1, col))
+                                data_array = []
+                        else:
+                            data_array = re.split(fields[j][3], col)
+                        for item_ in data_array:
+                            item = item_.strip()
+                            col_name = fields[j][2]
+                            if re.match(r'^ling_area_\d+$', col_name):
+                                col_name = 'ling_area'
+                                if item not in csv_dataframe[col_name]:
+                                    csv_dataframe[col_name][item] = len(csv_dataframe[col_name]) + 1
+                                ref_data.append(csv_dataframe[col_name][item])
+                            elif col_name in ['holder_file']:
+                                if item not in csv_dataframe[col_name]:
+                                    csv_dataframe[col_name][item] = len(csv_dataframe[col_name]) + 1
+                                ref_data.append(csv_dataframe[col_name][item])
                             else:
-                                data.append(col)
-                        elif fields[j][0] == 1 and len(fields[j][3]) == 0:
-                            if col not in csv_dataframe[fields[j][2]]:
-                                csv_dataframe[fields[j][2]][col] = len(csv_dataframe[fields[j][2]]) + 1
-                            data.append(csv_dataframe[fields[j][2]][col])
-                        elif fields[j][0] == 1 and len(fields[j][3]) > 1:
-                            ref_data = []
-                            if re.match(r'^ling_area_\d+$', fields[j][2]):
-                                try:
-                                    data_array = ["|".join([i.strip() for i in list(
-                                        re.findall(fields[j][3], col)[0])])]
-                                except IndexError:
-                                    print('Error: {0} in line {1} has wrong structure: {2}'.format(
-                                        fields[j][2], i + 1, col))
-                                    data_array = []
-                            else:
-                                data_array = re.split(fields[j][3], col)
-                            for item_ in data_array:
-                                item = item_.strip()
-                                col_name = fields[j][2]
-                                if re.match(r'^ling_area_\d+$', col_name):
-                                    col_name = 'ling_area'
-                                    if item not in csv_dataframe[col_name]:
-                                        csv_dataframe[col_name][item] = len(csv_dataframe[col_name]) + 1
+                                dfkey = 'x_sticks_' + col_name
+                                if item not in csv_dataframe[col_name]:
+                                    csv_dataframe[col_name][item] = len(csv_dataframe[col_name]) + 1
+                                if not csv_dataframe[col_name][item] in ref_data:
                                     ref_data.append(csv_dataframe[col_name][item])
-                                elif col_name in ['holder_file']:
-                                    if item not in csv_dataframe[col_name]:
-                                        csv_dataframe[col_name][item] = len(csv_dataframe[col_name]) + 1
-                                    ref_data.append(csv_dataframe[col_name][item])
-                                else:
-                                    dfkey = 'x_sticks_' + col_name
-                                    if item not in csv_dataframe[col_name]:
-                                        csv_dataframe[col_name][item] = len(csv_dataframe[col_name]) + 1
-                                    if not csv_dataframe[col_name][item] in ref_data:
-                                        ref_data.append(csv_dataframe[col_name][item])
-                                        if dfkey not in csv_dataframe:  # header
-                                            csv_dataframe[dfkey] = []
-                                            csv_dataframe[dfkey].append(['stick_pk', col_name + '_pk'])
-                                        csv_dataframe[dfkey].append([i, csv_dataframe[col_name][item]])
-                            # save ids to related table as semicolon separated lists of ids
-                            data.append(';'.join(map(str, ref_data)))
-            csv_dataframe['sticks'].append(data)
+                                    if dfkey not in csv_dataframe:  # header
+                                        csv_dataframe[dfkey] = []
+                                        csv_dataframe[dfkey].append(['stick_pk', col_name + '_pk'])
+                                    csv_dataframe[dfkey].append([i, csv_dataframe[col_name][item]])
+                        # save ids to related table as semicolon separated lists of ids
+                        data.append(';'.join(map(str, ref_data)))
+        csv_dataframe['sticks'].append(data)
 
     with args.api.get_catalog() as cat:
         images_objs = {obj.metadata['name']: obj for obj in cat}
