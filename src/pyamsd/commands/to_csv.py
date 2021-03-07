@@ -2,7 +2,7 @@
 Parses data file 'org_data/records.tsv' into single csv files into 'raw'.
 In addition it outputs given warnings while parsing. If you only want to check
 the data integrity of data file 'org_data/records.tsv' then pass the argument
-'check' -> amsd to_csv check.
+'--dry-run' -> amsd to_csv --dry-run.
 """
 import os
 import re
@@ -16,8 +16,8 @@ from pyamsd.util import *  # noqa: F403
 
 def register(parser):
     parser.add_argument(
-        'check',
-        action='store', default='', nargs='?', choices=['check', '']
+        '--dry-run', action='store_true', default=False,
+        help='Only check the data without generating csv files'
     )
 
 
@@ -139,7 +139,7 @@ def run(args):
         if v > 1:
             print('AMSD ID check: {0} occurs {1} times'.format(k, v))
 
-    if not args.check:
+    if not args.dry_run:
         for filename, data in csv_dataframe.items():
             with UnicodeWriter(raw_path.joinpath(filename + '.csv')) as writer:
                 if type(data) is list:
