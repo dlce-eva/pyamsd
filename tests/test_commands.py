@@ -14,8 +14,18 @@ def test_check(repos, capsys):
     assert 'PRM-1989.46.3_01.png' in capsout
 
 
+def test_copy_media(repos):
+    _main('--repos {0} copy_media {0}/images'.format(repos))
+    assert (repos / 'mediafiles' / 'upload' / 'PRM-1989.46.3_01.png').exists()
+
+
+def test_upload_media(repos, capsys):
+    _main('--repos {0} upload_media {0}/mediafiles/upload'.format(repos))
+    assert 'skipping' in capsys.readouterr().out
+
+
 def test_to_csv_check(repos, capsys):
-    _main('--repos {} to_csv check'.format(repos))
+    _main('--repos {} to_csv --dry-run'.format(repos))
     raw_dir = repos / 'raw'
     assert raw_dir.exists()
     assert not (raw_dir / 'sticks.csv').exists()
