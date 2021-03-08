@@ -15,7 +15,7 @@ def test_catalog(api):
 
 
 def test_rows(api):
-    assert len(api.rows) == 1
+    assert len(api.rows) == 4
 
 
 def test_validate(api, capsys):

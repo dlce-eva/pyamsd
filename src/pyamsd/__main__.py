@@ -10,13 +10,13 @@ from pyamsd.api import Amsd
 
 
 def main(args=None, catch_all=False, parsed_args=None):
-    parser, subparsers = get_parser_and_subparsers('asjp')
+    parser, subparsers = get_parser_and_subparsers('amsd')
     parser.add_argument(
         '--repos',
         help="path to amsd-data repository",
         type=PathType(type='dir'),
         default=pathlib.Path(
-            __file__).resolve().parent.parent.parent.parent.parent / 'amsd' / 'amsd-data')
+            __file__).resolve().parent.parent.parent.parent.parent / 'clld' / 'amsd-data')
     register_subcommands(subparsers, pyamsd.commands)
 
     args = parsed_args or parser.parse_args(args=args)

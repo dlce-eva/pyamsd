@@ -2,7 +2,7 @@
 Parses data file 'org_data/records.tsv' into single csv files into 'raw'.
 In addition it outputs given warnings while parsing. If you only want to check
 the data integrity of data file 'org_data/records.tsv' then pass the argument
-'check' -> amsd to_csv check.
+'--dry-run' -> amsd to_csv --dry-run.
 """
 import os
 import re
@@ -14,8 +14,17 @@ from csvw.dsv import reader, UnicodeWriter
 from pyamsd.util import *  # noqa: F403
 
 
+def register(parser):
+    parser.add_argument(
+        '--dry-run', action='store_true', default=False,
+        help='Only check the data without generating csv files'
+    )
+
+
 def run(args):
-    raw_path = pathlib.Path(__file__).resolve().parent.parent.parent / 'raw'
+    assert args.repos
+
+    raw_path = args.repos / 'raw'
     if not raw_path.exists():
         raw_path.mkdir()
 
@@ -36,9 +45,9 @@ def run(args):
         'data_entry': {},
     }
 
-    datafile = pathlib.Path(__file__).resolve().parent.parent.parent / 'org_data' / 'records.tsv'
+    datafile = args.repos / 'org_data' / 'records.tsv'
 
-    for i, row in reader(datafile, delimiter='\t'):
+    for i, row in enumerate(reader(datafile, delimiter='\t')):
         data = []
         if i == 0:  # header
             data.append('pk')  # add pk
@@ -130,7 +139,7 @@ def run(args):
         if v > 1:
             print('AMSD ID check: {0} occurs {1} times'.format(k, v))
 
-    if not args.args or args.args[0].lower() != 'check':
+    if not args.dry_run:
         for filename, data in csv_dataframe.items():
             with UnicodeWriter(raw_path.joinpath(filename + '.csv')) as writer:
                 if type(data) is list:
