@@ -6,7 +6,6 @@ the data integrity of data file 'org_data/records.tsv' then pass the argument
 """
 import os
 import re
-import pathlib
 import collections
 
 from csvw.dsv import reader, UnicodeWriter
