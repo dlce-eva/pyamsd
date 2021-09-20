@@ -20,7 +20,7 @@ class Amsd(API):
     def get_catalog(self):
         return Catalog(
             self.media_catalog_path,
-            cdstar_url=os.environ.get('CDSTAR_URL', 'https://cdstar.shh.mpg.de'),
+            cdstar_url=os.environ.get('CDSTAR_URL', 'https://cdstar.eva.mpg.de'),
             cdstar_user=os.environ.get('CDSTAR_USER'),
             cdstar_pwd=os.environ.get('CDSTAR_PWD'),
         )
