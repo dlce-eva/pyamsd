@@ -26,7 +26,7 @@ setup(
     install_requires=[
         'tqdm',
         'clldutils>=3.9.0',
-        'cdstarcat>=1.30',
+        'cdstarcat>=1.3.0',
         'attrs',
     ],
     extras_require={
