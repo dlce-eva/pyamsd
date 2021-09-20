@@ -5,7 +5,7 @@ setup(
     name='pyamsd',
     version='1.0.1.dev0',
     author='Hans-Jörg Bibiko',
-    author_email='lingweb@shh.mpg.de',
+    author_email='dlce.rdm@eva.mpg.de',
     description='Python library for AMSD data curation',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
@@ -25,8 +25,8 @@ setup(
     python_requires='>=3.6',
     install_requires=[
         'tqdm',
-        'clldutils>=3.5.4',
-        'cdstarcat>=0.6',
+        'clldutils>=3.9.0',
+        'cdstarcat>=1.3.0',
         'attrs',
     ],
     extras_require={
@@ -34,7 +34,7 @@ setup(
             'pytest',
             'pytest-mock',
             'pytest-cov',
-            'coverage>=4.2',
+            'coverage>=5.5',
         ],
         'dev': ['flake8', 'twine'],
     },
