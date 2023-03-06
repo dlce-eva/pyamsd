@@ -17,4 +17,5 @@ def test_sim(s, t, res):
 
 
 def test_dms2dec():
-    assert pytest.approx(-2.0339, dms2dec("""2°2'2"W"""))
+    assert -2.033889, dms2dec("""2°2'2"W""")
+    assert -13.5, dms2dec("-13.5")
