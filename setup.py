@@ -24,10 +24,9 @@ setup(
     platforms='any',
     python_requires='>=3.6',
     install_requires=[
-        'tqdm',
-        'clldutils>=3.9.0',
-        'cdstarcat>=1.3.0',
-        'attrs',
+        'clldutils>=3.19.0',
+        'cdstarcat>=1.4.0',
+        'csvw>=3.1.3'
     ],
     extras_require={
         'test': [
