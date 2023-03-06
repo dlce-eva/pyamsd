@@ -41,7 +41,7 @@ fields = [
     [0, 'Collector', 'collector', ''],
     [0, 'Place Collected', 'place_collected', ''],
     [0, 'Creator Copyright', 'creator_copyright', ''],
-    [0, 'File Copyright', 'file_copyright', ''],
+    [0, 'File Copyright and ICIP', 'file_copyright', ''],
     [0, 'Latitude', 'lat', ''],
     [0, 'Longitude', 'long', ''],
     [0, 'Notes on coordinates', 'notes_coords', ''],
@@ -49,6 +49,7 @@ fields = [
     [0, 'URL (source document)', 'url_source_1', ''],
     [0, 'URL (source document 2)', 'url_source_2', ''],
     [0, 'IRN', 'irn', ''],
+    [0, 'Related entries', 'related_entries', r' +'],
     [0, 'Notes', 'notes', ''],
     [1, 'Data entry (OCCAMS)', 'data_entry', r'  +'],
     [1, 'Linked Filename', 'linked_filenames', r' *; *']
@@ -88,7 +89,11 @@ def sim(s, t):
 
 
 def dms2dec(c):
-    deg, min, sec, dir = re.split('[°\'"]', c)
-    return round(
-        (float(deg) + float(min) / 60 + float(sec) / 3600) * (
-            -1 if dir.strip().lower() in ['w', 's'] else 1), 6)
+    try:
+        a = float(c)
+        return a
+    except ValueError:
+        deg, min, sec, dir = re.split('[°\'"]', c)
+        return round(
+            (float(deg) + float(min) / 60 + float(sec) / 3600) * (
+                -1 if dir.strip().lower() in ['w', 's'] else 1), 6)

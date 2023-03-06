@@ -41,6 +41,7 @@ def run(args):
         'source_citation': {},
         'source_type': {},
         'holder_file': {},
+        'related_entries': {},
         'data_entry': {},
     }
 
@@ -55,22 +56,22 @@ def run(args):
         else:
             data.append(i)  # add id
             for j, col_ in enumerate(row):
-                if j > 43 and len(col_):
-                    print('Error: too many filled columns for line {0}'.format(i + 1))
+                if j > 44 and len(col_):
+                    print('Error: too many filled columns for line {0}\n'.format(i + 1))
                     continue
-                if re.sub(r'[ ]+', '', col_) == '':
+                if re.sub(r'[ ]+', '', col_.strip()) == '':
                     data.append('')
                 else:
                     col = col_.strip()
                     if fields[j][2] in fields_not_in_sticks \
                             and fields[j][2] not in ['linked_filenames', 'source_citation']:
                         col = col.lower()
-                    if fields[j][0] == 0:
+                    if fields[j][0] == 0 and len(fields[j][3]) == 0:
                         if fields[j][2] in ['lat', 'long']:
                             try:
                                 data.append(dms2dec(col))
                             except ValueError:
-                                print('Error: check lat/long notation in line {0} for "{1}"'.format(
+                                print('Error: check lat/long notation in line {0} for "{1}\n"'.format(
                                     i + 1, col))
                                 data.append(None)
                         else:
@@ -79,6 +80,13 @@ def run(args):
                         if col not in csv_dataframe[fields[j][2]]:
                             csv_dataframe[fields[j][2]][col] = len(csv_dataframe[fields[j][2]]) + 1
                         data.append(csv_dataframe[fields[j][2]][col])
+                    elif fields[j][0] == 0 and len(fields[j][3]) > 1:
+                        col_name = fields[j][2]
+                        if col_name == 'related_entries':
+                            a = map(str.strip, re.split(fields[j][3], col))
+                            data.append(';'.join(a))
+                        else:
+                            print('Check init of field {}\n').format(col_name)
                     elif fields[j][0] == 1 and len(fields[j][3]) > 1:
                         ref_data = []
                         if re.match(r'^ling_area_\d+$', fields[j][2]):
@@ -86,7 +94,7 @@ def run(args):
                                 data_array = ["|".join([i.strip() for i in list(
                                     re.findall(fields[j][3], col)[0])])]
                             except IndexError:
-                                print('Error: {0} in line {1} has wrong structure: {2}'.format(
+                                print('Error: {0} in line {1} has wrong structure: {2}\n'.format(
                                     fields[j][2], i + 1, col))
                                 data_array = []
                         else:
@@ -134,9 +142,23 @@ def run(args):
     for s in csv_dataframe['sticks']:
         if s[1].strip():
             unique_ids_check[s[1]] += 1
+    unclear_ids = set()
     for k, v in unique_ids_check.items():
         if v > 1:
-            print('AMSD ID check: {0} occurs {1} times'.format(k, v))
+            print('AMSD ID check: {0} occurs {1} times\n'.format(k, v))
+            unclear_ids.add(k)
+
+    # check related_entries
+    for i, s in enumerate(csv_dataframe['sticks']):
+        if i > 0 and s[42].strip():
+            rids = s[42].split(';')
+            for rid in rids:
+                if rid not in unique_ids_check:
+                    print('Related entry ID {} in line {} not found as AMSD ID\n'.format(rid, i+1))
+                if rid == s[1]:
+                    print('Related entry ID {} in line {} refers to itself\n'.format(rid, i+1))
+                if rid in unclear_ids:
+                    print('Related entry ID {} in line {} is marked as occurring more than once\n'.format(rid, i+1))
 
     if not args.dry_run:
         for filename, data in csv_dataframe.items():
