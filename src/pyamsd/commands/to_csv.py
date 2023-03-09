@@ -47,18 +47,26 @@ def run(args):
 
     datafile = args.repos / 'org_data' / 'records.tsv'
 
+    pk_to_linenr = dict()
+
+    lcol = 0
     for i, row in enumerate(reader(datafile, delimiter='\t')):
         data = []
         if i == 0:  # header
+            lcol = len(row)
             data.append('pk')  # add pk
             for j, col in enumerate(row):
                 data.append(fields[j][2].strip())
         else:
             data.append(i)  # add id
+            if lcol > len(row):
+                print('Error: probably new_line in cell in line {} - line has {} columns instead of {}'.format(i+1, len(row), lcol))
+                continue
             for j, col_ in enumerate(row):
-                if j > 44 and len(col_):
-                    print('Error: too many filled columns for line {0}\n'.format(i + 1))
-                    continue
+                if j > lcol-1:
+                    if col_.strip() != '':
+                        print('Error: too many filled columns for line {0}\n'.format(i + 1))
+                        continue
                 if re.sub(r'[ ]+', '', col_.strip()) == '':
                     data.append('')
                 else:
@@ -82,7 +90,7 @@ def run(args):
                         data.append(csv_dataframe[fields[j][2]][col])
                     elif fields[j][0] == 0 and len(fields[j][3]) > 1:
                         col_name = fields[j][2]
-                        if col_name == 'related_entries':
+                        if col_name in ['related_entries', 'irn']:
                             a = map(str.strip, re.split(fields[j][3], col))
                             data.append(';'.join(a))
                         else:
@@ -121,6 +129,7 @@ def run(args):
                                         csv_dataframe[dfkey] = []
                                         csv_dataframe[dfkey].append(['stick_pk', col_name + '_pk'])
                                     csv_dataframe[dfkey].append([i, csv_dataframe[col_name][item]])
+                                    pk_to_linenr[csv_dataframe[col_name][item]] = i + 1
                         # save ids to related table as semicolon separated lists of ids
                         data.append(';'.join(map(str, ref_data)))
         csv_dataframe['sticks'].append(data)
@@ -135,7 +144,7 @@ def run(args):
         for i in range(len(check_sim)):
             for j in range(i + 1, len(check_sim)):
                 if sim(check_sim[i], check_sim[j]) < k:
-                    print('sim check: %s\n%s\n%s\n' % (t, check_sim[i], check_sim[j]))
+                    print('sim check: {}\n{}\n{}\n'.format(t, check_sim[i], check_sim[j]))
 
     # look for unique AMSD IDs
     unique_ids_check = collections.defaultdict(int)
@@ -187,10 +196,10 @@ def run(args):
                                         url_path = o.id
                                         break
                                 if url_path == '':
-                                    print("no path found for %s" % (k_))
+                                    print("no path found for {}" .format(k_))
                                 d.append([v, k, images_objs[k_].id, url_path])
                             else:
-                                print("no image match for '%s'" % (k))
+                                print("no image match for '{}' in line {}".format(k, pk_to_linenr.get(v, v)))
                                 d.append([v, k, ''])
                     else:
                         d.append(['pk', 'name'])

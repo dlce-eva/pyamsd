@@ -48,7 +48,7 @@ fields = [
     [0, 'URL (collecting institution)', 'url_institution', ''],
     [0, 'URL (source document)', 'url_source_1', ''],
     [0, 'URL (source document 2)', 'url_source_2', ''],
-    [0, 'IRN', 'irn', ''],
+    [0, 'IRN', 'irn', r' *; *'],
     [0, 'Related entries', 'related_entries', r' +'],
     [0, 'Notes', 'notes', ''],
     [1, 'Data entry (OCCAMS)', 'data_entry', r'  +'],
