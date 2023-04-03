@@ -41,7 +41,6 @@ def run(args):
         'source_citation': {},
         'source_type': {},
         'holder_file': {},
-        'related_entries': {},
         'data_entry': {},
     }
 
