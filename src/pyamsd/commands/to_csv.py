@@ -52,13 +52,13 @@ def run(args):
     for i, row in enumerate(reader(datafile, delimiter='\t')):
         data = []
         if i == 0:  # header
-            lcol = len(row)
+            lcol = len(row) + 1  # +1 due to spreadsheet app
             data.append('pk')  # add pk
             for j, col in enumerate(row):
                 data.append(fields[j][2].strip())
         else:
             data.append(i)  # add id
-            if lcol > len(row):
+            if lcol != len(row):
                 print('Error: probably new_line in cell in line {} - line has {} columns instead of {}'.format(i+1, len(row), lcol))
                 continue
             for j, col_ in enumerate(row):
