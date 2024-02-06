@@ -15,6 +15,9 @@ def run(args):
                        'moviefile': ['mp4']}
 
     with args.api.get_catalog() as cat:
+
+        name_uid_map = {obj.metadata['name']: obj for obj in cat}
+
         for ifn in sorted(args.upload_path.iterdir()):
             print(ifn.name)
 
@@ -27,6 +30,12 @@ def run(args):
             if meta_type is None:
                 print('No supported media format - skipping {0}'.format(fmt))
                 continue
+
+            if str(ifn.stem) in name_uid_map:
+                cat_obj = name_uid_map[str(ifn.stem)]
+                cat_obj_id = name_uid_map[str(ifn.stem)].id
+                print('{}: object {} exists - will be deleted'.format(ifn.name, cat_obj_id))
+                cat.delete(cat_obj_id)
 
             md = {
                 'collection': 'amsd',

@@ -34,6 +34,7 @@ def run(args):
         'linked_filenames': {},
         'item_type': {},
         'item_subtype': {},
+        'state_territory': {},
         'cultural_region': {},
         'material': {},
         'technique': {},
@@ -91,6 +92,7 @@ def run(args):
                         col_name = fields[j][2]
                         if col_name in ['related_entries', 'irn']:
                             a = map(str.strip, re.split(fields[j][3], col))
+                            a = [x for x in a if x.strip()]
                             data.append(';'.join(a))
                         else:
                             print('Check init of field {}\n').format(col_name)
@@ -158,15 +160,16 @@ def run(args):
 
     # check related_entries
     for i, s in enumerate(csv_dataframe['sticks']):
-        if i > 0 and s[42].strip():
-            rids = s[42].split(';')
+        if i > 0 and s[43].strip():
+            rids = s[43].split(';')
+            # rids = [s.strip() for s in rids]
             for rid in rids:
                 if rid not in unique_ids_check:
-                    print('Related entry ID {} in line {} not found as AMSD ID\n'.format(rid, i+1))
+                    print('Related entry ID ::{}:: in line {} not found as AMSD ID\n'.format(rid, i+1))
                 if rid == s[1]:
-                    print('Related entry ID {} in line {} refers to itself\n'.format(rid, i+1))
+                    print('Related entry ID ::{}:: in line {} refers to itself\n'.format(rid, i+1))
                 if rid in unclear_ids:
-                    print('Related entry ID {} in line {} is marked as occurring more than once\n'.format(rid, i+1))
+                    print('Related entry ID ::{}:: in line {} is marked as occurring more than once\n'.format(rid, i+1))
 
     if not args.dry_run:
         for filename, data in csv_dataframe.items():

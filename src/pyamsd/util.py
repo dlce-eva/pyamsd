@@ -15,6 +15,7 @@ fields = [
     [0, 'Place Created', 'place_created', ''],
     [1, 'Item type', 'item_type', ''],
     [1, 'Subtype', 'item_subtype', ''],
+    [0, 'State or territory', 'state_territory', ''],
     [1, 'Cultural region', 'cultural_region', ''],
     [1, 'Linguistic area', 'ling_area_1',
      r'Chirila\s*:\s*(.*?)  +Austlang\s*:\s*(.*?)\s*:(.*?)  +Glottolog\s*:\s*(.*)\s*'],
@@ -49,7 +50,7 @@ fields = [
     [0, 'URL (source document)', 'url_source_1', ''],
     [0, 'URL (source document 2)', 'url_source_2', ''],
     [0, 'IRN', 'irn', r' *; *'],
-    [0, 'Related entries', 'related_entries', r' +'],
+    [0, 'Related entries', 'related_entries', r'[ ,;]+'],
     [0, 'Notes', 'notes', ''],
     [1, 'Data entry (OCCAMS)', 'data_entry', r'  +'],
     [1, 'Linked Filename', 'linked_filenames', r' *; *']
