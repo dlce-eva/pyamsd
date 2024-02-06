@@ -30,7 +30,7 @@ def test_to_csv_check(repos, capsys):
     assert raw_dir.exists()
     assert not (raw_dir / 'sticks.csv').exists()
     capsout = capsys.readouterr().out
-    assert 'Piers kelly' in capsout
+    assert 'wrong structure' in capsout
 
 
 def test_to_csv(repos):
@@ -38,4 +38,4 @@ def test_to_csv(repos):
     raw_dir = repos / 'raw'
     assert raw_dir.exists()
     assert (raw_dir / 'sticks.csv').exists()
-    assert len(list(raw_dir .glob('*.csv'))) == 22
+    assert len(list(raw_dir .glob('*.csv'))) == 23
