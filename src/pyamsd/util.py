@@ -94,7 +94,11 @@ def dms2dec(c):
         a = float(c)
         return a
     except ValueError:
-        deg, min, sec, dir = re.split('[°\'"]', c)
+        deg, min, sec, dir = re.split(r'[°\'"]\s*', c.strip())
+        if dir == '':
+            if deg.startswith('-'):
+                dir = 'w'
+                deg = deg[1:]
         return round(
             (float(deg) + float(min) / 60 + float(sec) / 3600) * (
                 -1 if dir.strip().lower() in ['w', 's'] else 1), 6)
