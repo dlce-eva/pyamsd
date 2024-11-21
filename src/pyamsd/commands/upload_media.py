@@ -12,7 +12,8 @@ def register(parser):
 def run(args):
     supported_types = {'imagefile': ['png', 'gif', 'jpg', 'jpeg', 'tif', 'tiff'],
                        'pdffile': ['pdf'],
-                       'moviefile': ['mp4']}
+                       'moviefile': ['mp4'],
+                       'audiofile': ['mp3']}
 
     with args.api.get_catalog() as cat:
 

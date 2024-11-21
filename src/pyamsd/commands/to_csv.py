@@ -133,6 +133,12 @@ def run(args):
                                     pk_to_linenr[csv_dataframe[col_name][item]] = i + 1
                         # save ids to related table as semicolon separated lists of ids
                         data.append(';'.join(map(str, ref_data)))
+        data = list(map(lambda s: s
+                        .replace('<br/>', '@@!@@')
+                        .replace('<', '&lt;')
+                        .replace('>', '&gt;')
+                        .replace('&', '&amp;')
+                        .replace('@@!@@', '<br/><br/>') if type(s) is str else s, data))
         csv_dataframe['sticks'].append(data)
 
     with args.api.get_catalog() as cat:
