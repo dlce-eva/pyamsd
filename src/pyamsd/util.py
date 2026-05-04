@@ -68,12 +68,12 @@ fields_not_in_sticks = [
 ]
 
 
-def sim(s, t):
+def sim(s: str, t: str) -> int:
     if s == t:
         return 0
-    elif len(s) == 0:
+    if len(s) == 0:
         return len(t)
-    elif len(t) == 0:
+    if len(t) == 0:
         return len(s)
     v0 = [None] * (len(t) + 1)
     v1 = [None] * (len(t) + 1)

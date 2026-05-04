@@ -171,11 +171,11 @@ def run(args):
             # rids = [s.strip() for s in rids]
             for rid in rids:
                 if rid not in unique_ids_check:
-                    print('Related entry ID ::{}:: in line {} not found as AMSD ID\n'.format(rid, i+1))
+                    print(f'Related entry ID ::{rid}:: in line {i+1} not found as AMSD ID\n')
                 if rid == s[1]:
-                    print('Related entry ID ::{}:: in line {} refers to itself\n'.format(rid, i+1))
+                    print(f'Related entry ID ::{rid}:: in line {i+1} refers to itself\n')
                 if rid in unclear_ids:
-                    print('Related entry ID ::{}:: in line {} is marked as occurring more than once\n'.format(rid, i+1))
+                    print(f'Related entry ID ::{rid}:: in line {i+1} is marked as occurring more than once\n')
 
     if not args.dry_run:
         for filename, data in csv_dataframe.items():

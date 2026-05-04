@@ -33,7 +33,6 @@ def run(args):
                 continue
 
             if str(ifn.stem) in name_uid_map:
-                cat_obj = name_uid_map[str(ifn.stem)]
                 cat_obj_id = name_uid_map[str(ifn.stem)].id
                 print('{}: object {} exists - will be deleted'.format(ifn.name, cat_obj_id))
                 cat.delete(cat_obj_id)

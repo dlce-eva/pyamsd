@@ -2,6 +2,7 @@ import os
 import shutil
 import collections
 
+from tqdm import tqdm
 from csvw.dsv import reader
 from clldutils.apilib import API
 from clldutils import jsonlib
@@ -33,7 +34,7 @@ class Amsd(API):
         media = set(v['metadata']['path'] for v in self.media_catalog.values())
         missing = collections.Counter()
 
-        for row in self.rows:
+        for row in tqdm(self.rows):
             if row['Linked Filename']:
                 for name in row['Linked Filename'].split(';'):
                     name = name.strip()
@@ -53,4 +54,4 @@ class Amsd(API):
             else:
                 if i == 0:
                     print('Missing files:')
-                print('{0} -- {1}x'.format(k, v))
+                print(f'{k} -- {v}x')
