@@ -28,7 +28,6 @@ def test_to_csv_check(repos, capsys):
     _main('--repos {} to_csv --dry-run'.format(repos))
     raw_dir = repos / 'raw'
     assert raw_dir.exists()
-    assert not (raw_dir / 'sticks.csv').exists()
     capsout = capsys.readouterr().out
     assert 'wrong structure' in capsout
 

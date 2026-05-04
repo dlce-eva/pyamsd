@@ -15,8 +15,8 @@ def main(args=None, catch_all=False, parsed_args=None):
         '--repos',
         help="path to amsd-data repository",
         type=PathType(type='dir'),
-        default=pathlib.Path(
-            __file__).resolve().parent.parent.parent.parent.parent / 'clld' / 'amsd-data')
+        default=pathlib.Path('.'),
+    )
     register_subcommands(subparsers, pyamsd.commands)
 
     args = parsed_args or parser.parse_args(args=args)
