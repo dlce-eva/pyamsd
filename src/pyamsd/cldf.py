@@ -45,6 +45,7 @@ ItemSubtype = Literal[
     'story',
     'replicative_artistic',
     'replicative',
+    'fictional',
 ]
 
 
@@ -235,8 +236,6 @@ class Stick:  # pylint: disable=R0902
             self.item_type, self.place_created = self.place_created, ''
         elif self.id == 'AMus_E013406':  # self.pk == '748':  #
             self.state_territory, self.place_created = 'Queensland', ''
-        #elif self.id == 'JWC1878':  # self.pk == '1373':  #
-        #    self.item_type, self.item_subtype = self.item_subtype.lower(), ''
         elif self.id == 'BERNDT1946_0003_3':  # self.pk == '1044':  #
             self.motifs, self.sem_domain = '', self.motifs.split()
         elif self.id == 'SAM_A_77523':  # self.pk == '569':  #
@@ -262,6 +261,7 @@ class Stick:  # pylint: disable=R0902
             self.item_type = self.item_type.lower()
             assert self.item_type in get_args(ItemType), self.item_type
         if self.item_subtype:
+            self.item_subtype = self.item_subtype.lower()
             assert self.item_subtype in get_args(ItemSubtype), self.item_subtype
 
         self.amsd_id = self.amsd_id.replace(' ', '')

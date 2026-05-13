@@ -183,8 +183,6 @@ class ControlledVocab:
                         if url_path == '':
                             print(f"no path found for {k}")  # pragma: no cover
                         d.append([v, k, images_objs[k_].id, url_path])
-                    #else:
-                    #    d.append([v, k, ''])
             else:
                 d.append(['pk', 'name'])
                 for k, v in self.data.items():
@@ -281,7 +279,7 @@ class StickTable:
     def _get_val_cv(self, col: str, field: Field):
         return self.controlled_vocabularies[field.new_name].pk(col)
 
-    def _get_val_cv_multivalued(self,col: str, field: Field, linenr: int):
+    def _get_val_cv_multivalued(self, col: str, field: Field, linenr: int):
         ref_data = []
         for item_ in field.split(col, linenr):
             item = item_.strip()
