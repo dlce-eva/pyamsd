@@ -6,9 +6,9 @@ Example: amsd copy_media ~/Downloads/Message_sticks_images_all
 from clldutils.clilib import PathType
 
 
-def register(parser):
+def register(parser):  # pylint: disable=C0116
     parser.add_argument('source_path', type=PathType(type='dir'))
 
 
-def run(args):
+def run(args):  # pylint: disable=C0116
     args.api.validate(args.source_path.resolve())

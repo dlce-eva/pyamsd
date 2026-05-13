@@ -1,3 +1,6 @@
+"""
+Provides the CLI for the pyamsd package.
+"""
 import sys
 import pathlib
 import contextlib
@@ -9,7 +12,7 @@ import pyamsd.commands
 from pyamsd.api import Amsd
 
 
-def main(args=None, catch_all=False, parsed_args=None):
+def main(args=None, catch_all=False, parsed_args=None):  # pylint: disable=C0116
     parser, subparsers = get_parser_and_subparsers('amsd')
     parser.add_argument(
         '--repos',
