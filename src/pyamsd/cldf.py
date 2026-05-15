@@ -1,10 +1,10 @@
 """
 Functionality implementing CLDF creation from pre-processed AMSD data in org_data.
 """
-import logging
-import pathlib
 import re
 import shutil
+import logging
+import pathlib
 import argparse
 import functools
 import mimetypes
@@ -522,7 +522,7 @@ class Dataset(BaseDataset):
         # zip media for zenodo
         for sd in self.raw_dir.joinpath('amsd').iterdir():
             if sd.is_dir():
-                subprocess.check_call(
+                subprocess.check_output(
                     ['zip', '-r', get_media_zipfile_name(sd), f'amsd/{sd.name}'], cwd=self.raw_dir)
 
     def schema(self, cldf):
