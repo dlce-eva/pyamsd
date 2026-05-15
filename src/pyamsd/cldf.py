@@ -8,14 +8,15 @@ import shutil
 import argparse
 import functools
 import mimetypes
+import subprocess
 import dataclasses
 import urllib.request
 from typing import Literal, get_args, Optional
 
 from clldutils.coordinates import Coordinates
 from clldutils.misc import nfilter
-from clldutils.jsonlib import load
-from cldfbench import Dataset as BaseDataset
+from clldutils.jsonlib import load, update_ordered
+from cldfbench import Dataset as BaseDataset, Metadata as BaseMetadata
 
 StateTerritoryType = Literal[
     'New South Wales', 'Victoria', 'Northern Territory', 'Western Australia', 'South Australia',
@@ -47,6 +48,11 @@ ItemSubtype = Literal[
     'replicative',
     'fictional',
 ]
+
+
+def doc(s):
+    """Normalize a docstring."""
+    return '\n'.join(ln.strip() for ln in s.split('\n')).strip()
 
 
 def year_collected(s) -> Optional[int]:
@@ -214,6 +220,7 @@ class Stick:  # pylint: disable=R0902
             'wa_kimberley': 'WA_Kimberley',
             'Central Australia': 'NT_CA',
             'Central Australia / western desert': 'NT_CA / WD',
+            'Channel country': 'Channel Country',
         }.get(row['cultural_region'], row['cultural_region'])
 
         cls.resolve(row, 'data_entry', ds)
@@ -362,10 +369,24 @@ class Stick:  # pylint: disable=R0902
             return '; '.join(dims)
 
 
+@dataclasses.dataclass
+class Metadata(BaseMetadata):
+    """We want to relate the CLDF data to the media file deposit on Zenodo."""
+    media_files_doi: str = None
+
+
+def get_media_zipfile_name(d: pathlib.Path) -> str:
+    """We split the media files into 16 zip archives, partitioned by hex digit."""
+    digit = d.name.split('-')[-1]
+    assert digit in '0123456789ABCDEF'
+    return f'amsd_media_{digit}.zip'
+
+
 class Dataset(BaseDataset):
     """The cldfbench dataset for AMSD."""
     dir = None
     id = "amsd"
+    metadata_cls = Metadata
 
     @functools.lru_cache(maxsize=10)
     def items(self, what: str) -> dict[str, str]:
@@ -409,7 +430,12 @@ class Dataset(BaseDataset):
 
         media = Media()
         for row in self.raw_dir.read_csv('linked_filenames.csv', dicts=True):
-            res = media.add(row, self.dir / 'images' / 'media', self.cldf_dir, args.log)
+            res = media.add(
+                row,
+                self.dir / 'images' / 'media',
+                self.raw_dir / 'amsd',
+                self.metadata.media_files_doi,
+                args.log)
             if res:
                 args.writer.objects['MediaTable'].append(res)
 
@@ -478,8 +504,26 @@ class Dataset(BaseDataset):
                                      if pk and pk in media.pk2id)),
             ))
 
-        for i, g in related_dict.items():
-            args.writer.objects['related.csv'].append({'ID': i, 'Stick_IDs': g})
+        for item in related_dict.items():
+            args.writer.objects['related.csv'].append({'ID': item[0], 'Stick_IDs': item[1]})
+
+        with update_ordered(self.dir / '.zenodo.json') as json:
+            json['related_identifiers'] = [
+                {
+                    "identifier": f"https://doi.org/{self.metadata.media_files_doi}",
+                    "relation": "isSupplementedBy",
+                },
+                {
+                    "identifier": "https://messagesticks.com.au/",
+                    "relation": "isDocumentedBy",
+                },
+            ]
+
+        # zip media for zenodo
+        for sd in self.raw_dir.joinpath('amsd').iterdir():
+            if sd.is_dir():
+                subprocess.check_call(
+                    ['zip', '-r', get_media_zipfile_name(sd), f'amsd/{sd.name}'], cwd=self.raw_dir)
 
     def schema(self, cldf):
         """Create the dataset schema."""
@@ -496,14 +540,14 @@ class Dataset(BaseDataset):
             'ContributionTable',
             {
                 'name': 'Item_Type',
-                'dc:description': 'FIXME',
+                'dc:description': 'See above',
                 'datatype': {'base': 'string', 'format': '|'.join(
                     re.escape(s) for s in get_args(ItemType))}
             },
             'Item_Subtype',
             {
                 'name': 'State_Territory',
-                'separator': '|',
+                'separator': ' + ',
                 'datatype': {'base': 'string', 'format': '|'.join(
                     re.escape(s) for s in get_args(StateTerritoryType))}
             },
@@ -512,7 +556,7 @@ class Dataset(BaseDataset):
             'Motif_Transcription',
             {
                 'name': 'Keywords',
-                'separator': '|',
+                'separator': ' + ',
             },
             'Object_Creator',
             {
@@ -540,26 +584,26 @@ class Dataset(BaseDataset):
             },
             {
                 'name': 'Material',
-                'separator': '|',
+                'separator': ' + ',
                 'datatype': {
                     'base': 'string',
                     'format': '|'.join(re.escape(m) for m in self.items('material').values())},
             },
             {
                 'name': 'Technique',
-                'separator': '|',
+                'separator': ' + ',
                 'datatype': {
                     'base': 'string',
                     'format': '|'.join(re.escape(m) for m in self.items('technique').values())},
             },
             {
                 'name': 'Source_Citation',
-                'separator': '|',
+                'separator': ' + ',
                 'datatype': 'string',
             },
             {
                 'name': 'Source_Type',
-                'separator': '|',
+                'separator': ' + ',
                 'datatype': {
                     'base': 'string',
                     'format': '|'.join(re.escape(m) for m in self.items('source_type').values())},
@@ -594,7 +638,7 @@ class Dataset(BaseDataset):
             },
             {
                 'name': 'Data_Entry',
-                'separator': '|',
+                'separator': ' + ',
                 'datatype': {
                     'base': 'string',
                     'format': '|'.join(re.escape(m) for m in self.items('data_entry').values())},
@@ -605,7 +649,8 @@ class Dataset(BaseDataset):
                 'propertyUrl': 'http://cldf.clld.org/v1.0/terms.rdf#mediaReference',
             },
         )
-        cldf.add_table(
+        ct.common_props['dc:description'] = doc(Stick.__doc__)
+        rel = cldf.add_table(
             'related.csv',
             {
                 'name': 'ID',
@@ -617,6 +662,7 @@ class Dataset(BaseDataset):
                 'propertyUrl': 'http://cldf.clld.org/v1.0/terms.rdf#contributionReference',
             }
         )
+        rel.common_props['dc:description'] = "Groups of related items from ContributionTable."
         ct.add_foreign_key('Related', 'related.csv', 'ID')
 
 
@@ -626,11 +672,12 @@ class Media:
     pk2id: dict[str, str] = dataclasses.field(default_factory=dict)
     oids: set[str] = dataclasses.field(default_factory=set)
 
-    def add(
+    def add(  # pylint: disable=R0913,R0917
             self,
             row: dict[str, str],
             media_dir: pathlib.Path,
-            cldf_dir: pathlib.Path,
+            zenodo_dir: pathlib.Path,
+            media_files_doi: str,
             log: logging.Logger
     ) -> Optional[dict[str, str]]:
         """Add a row from linked_filenames, optionally returning a row for MediaTable."""
@@ -647,13 +694,17 @@ class Media:
             return None
         t, _ = mimetypes.guess_type(src.name)
         assert t, (t, src.name)
-        target = cldf_dir / row['oid'][:7] / (row['oid'] + src.suffix)
+
+        target = zenodo_dir / row['oid'][:7] / (row['oid'] + src.suffix)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(src, target)
+
         self.pk2id[row['pk']] = row['oid']
         return dict(  # pylint: disable=R1735
             ID=row['oid'],
             Name=row['name'],
             Media_Type=t,
-            Download_URL=str(target.relative_to(cldf_dir)),
+            Download_URL=f'https://zenodo.org/records/{media_files_doi}/files/'
+                         f'{get_media_zipfile_name(target.parent)}',
+            Path_In_Zip='amsd/' + row['oid'][:7] + '/' + row['oid'] + src.suffix,
         )
